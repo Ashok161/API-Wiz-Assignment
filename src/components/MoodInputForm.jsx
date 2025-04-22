@@ -65,32 +65,39 @@ const MoodInputForm = () => {
          return; // Don't fetch again
     }
 
-
+    // 1. Check if the Geolocation API is supported
     if (!navigator.geolocation) {
       setWeatherError("Geolocation not supported. Fetching weather for Hyderabad.");
-      setLocation(HYDERABAD_COORDS);
-      return;
+      setLocation(HYDERABAD_COORDS); // Fallback
+      return; // Stop if not supported
     }
 
     setIsLoadingWeather(true);
     setWeatherError(null);
 
+    // 2. Call getCurrentPosition with success and error handlers
     navigator.geolocation.getCurrentPosition(
+      // Success Callback (handleSuccess)
       (position) => {
+        // Set the location state with coordinates
         setLocation({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
+        // Weather fetch is triggered by the location state update in another useEffect
       },
+      // Error Callback (handleError)
       (error) => {
         console.error("Geolocation error:", error);
         setWeatherError(`Unable to retrieve location: ${error.message}. Fetching weather for Hyderabad.`);
-        setLocation(HYDERABAD_COORDS);
+        setLocation(HYDERABAD_COORDS); // Fallback on error
       },
+      // Options
       { timeout: 10000 }
     );
-  // Depend on isToday, location state, and entries (for checking saved weather)
-  }, [isToday, location, entries, todayDate]);
+    // NOTE: The browser asks for permission when the line above is executed
+
+  }, [isToday, location, entries, todayDate]); // Dependencies for the effect
 
 
   // --- Fetch Weather (Only if selectedDate is Today and location is available) ---
